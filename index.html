@@ -2,71 +2,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
+    <meta charset="utf-8">
 
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="calculator.js"></script>
+    <style type="text/css">
+        #calculatorInput {
+            float: left;
+        }
+
+        #graphView {
+            width: 500px;
+            float: left;
+        }
+        .button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+        .buttonRound {
+            border-radius: 12px;
+        }
+        input[type=text] {
+            width: 100%;
+            padding: 6px 20px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: none;
+            border-bottom: 2px solid grey;
+        }
+    </style>
 
 </head>
 
 <body>
+<div id="calculatorInput">
 
-<!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+    Investment amount:<br>
+    <input type="text" name="amount" id="amount"><br>
+    Rate of interest:<br>
+    <input type="text" name="interest" id="interest"><br>
+    Loan tenure:<br>
+    <input type="text" name="tenure" id="tenure"><br>
+    Revenue:<br>
+    <input type="text" name="revenue" id="revenue"><br>
+    Growth rate (%):<br>
+    <input type="text" name="growthRate" id="growthRate"><br>
+    <input type="submit" class="button buttonRound" value="Calculate" onclick="displayGraph()">
+
+</div>
+<div id="graphView">
+    <svg id="chart" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
 <script>
 
-// set the dimensions and margins of the graph
-var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 460 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+	function displayGraph() {
+		d3.selectAll("svg > *").remove();
 
-// append the svg object to the body of the page
-var svg = d3.select("#my_dataviz")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
+		let amount = document.getElementById("amount").value;
+		let interest = document.getElementById("interest").value;
+		let tenure = document.getElementById("tenure").value;
+		let revenue = document.getElementById("revenue").value;
+		let growthRate = document.getElementById("growthRate").value;
 
-//Read the data
-d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
+		let hardCodedData = getData(amount, interest, tenure, revenue, growthRate);
+		const parseTime = d3.timeParse('%Y-%m-%d');
 
-  // When reading the csv, I must format variables:
-  function(d){
-    return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value }
-  },
+		let history = hardCodedData.map((d) => {
+			return {
+				date: parseTime(d.date),
+				volume: d.lp,
+			};
+		});
 
-  // Now I can use this dataset:
-  function(data) {
+		const historyIndex = history.map((d, i) => [i, d.volume]);
 
-    // Add X axis --> it is a date format
-    var x = d3.scaleTime()
-      .domain(d3.extent(data, function(d) { return d.date; }))
-      .range([ 0, width ]);
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+		let forecast = hardCodedData.map((d) => {
+			return {
+				date: parseTime(d.date),
+				volume: d.rsp,
+			};
+		});
 
-    // Add Y axis
-    var y = d3.scaleLinear()
-      .domain([0, d3.max(data, function(d) { return +d.value; })])
-      .range([ height, 0 ]);
-    svg.append("g")
-      .call(d3.axisLeft(y));
+		const chart = d3.select('#chart');
+		const margin = { top: 20, right: 20, bottom: 30, left: 70 };
+		const width = 1000 - margin.left - margin.right;
+		const height = 700 - margin.top - margin.bottom;
+		const innerChart = chart.append('g')
+			.attr('transform', `translate(${margin.left} ${margin.top})`);
 
-    // Add the line
-    svg.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(function(d) { return x(d.date) })
-        .y(function(d) { return y(d.value) })
-        )
+		const x = d3.scaleTime().rangeRound([0, width]);
+		const y = d3.scaleLinear().rangeRound([height, 0]);
 
-})
+		const line = d3.line()
+			.x(d => x(d.date))
+			.y(d => y(d.volume));
+
+		x.domain([d3.min(history, d => d.date), d3.max(forecast, d => d.date)]);
+		y.domain([0, d3.max(forecast, d => d.volume)]);
+
+		innerChart.append('g')
+			.attr('transform', `translate(0 ${height})`)
+			.call(d3.axisBottom(x));
+
+		innerChart.append('g')
+			.call(d3.axisLeft(y))
+			.append('text')
+			.attr('fill', '#000')
+			.attr('transform', 'rotate(-90)')
+			.attr('y', 6)
+			.attr('dy', '0.71em')
+			.attr('text-anchor', 'end')
+			.text('Monthly repayments');
+
+		innerChart.append('path')
+			.datum(history)
+			.attr('fill', 'none')
+			.attr('stroke', 'steelblue')
+			.attr('stroke-width', 1.5)
+			.attr('d', line);
+
+		innerChart.append('path')
+			.datum(forecast)
+			.attr('fill', 'none')
+			.attr('stroke', 'tomato')
+			.attr('stroke-width', 1.5)
+			.attr('d', line);
+	}
 
 </script>
 </body>
