@@ -2,221 +2,141 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
+  <meta charset="utf-8">
 
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v4.js"></script>
-<style type="text/css">
-  #calculatorInput {
-    float: left;
-  }
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script src="calculator.js"></script>
+  <style type="text/css">
+    #calculatorInput {
+      float: left;
+    }
 
-  #graphView {
-    width: 500px;
-    float: left;
-  }
-  .button {
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-  }
-  .buttonRound {
-    border-radius: 12px;
-  }
-  input[type=text] {
-    width: 100%;
-    padding: 6px 20px;
-    margin: 8px 0;
-    box-sizing: border-box;
-    border: none;
-    border-bottom: 2px solid grey;
-  }
-</style>
+    #graphView {
+      width: 500px;
+      float: left;
+    }
+    .button {
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+    .buttonRound {
+      border-radius: 12px;
+    }
+    input[type=text] {
+      width: 100%;
+      padding: 6px 20px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      border: none;
+      border-bottom: 2px solid grey;
+    }
+  </style>
 
 </head>
 
 <body>
-  <div id="calculatorInput">
+<div id="calculatorInput">
 
-    Investment amount:<br>
-    <input type="text" name="amount" id="amount"><br>
-    Rate of interest:<br>
-    <input type="text" name="interest" id="interest"><br>
-    Loan tenure:<br>
-    <input type="text" name="tenure" id="tenure"><br>
-    Revenue:<br>
-    <input type="text" name="revenue" id="revenue"><br>
-    Growth rate (%):<br>
-    <input type="text" name="growthRate" id="growthRate"><br>
-    <input type="submit" class="button buttonRound" value="Calculate" onclick="displayGraph()">
+  Investment amount:<br>
+  <input type="text" name="amount" id="amount"><br>
+  Rate of interest:<br>
+  <input type="text" name="interest" id="interest"><br>
+  Loan tenure:<br>
+  <input type="text" name="tenure" id="tenure"><br>
+  Revenue:<br>
+  <input type="text" name="revenue" id="revenue"><br>
+  Growth rate (%):<br>
+  <input type="text" name="growthRate" id="growthRate"><br>
+  <input type="submit" class="button buttonRound" value="Calculate" onclick="displayGraph()">
 
-  </div>
-  <div id="graphView">
-    <svg id="chart" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
-  </div>
+</div>
+<div id="graphView">
+  <svg id="chart" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
 <script>
 
-function displayGraph() {
-  var amount = document.getElementById("amount").value;
-  var interest = document.getElementById("interest").value;
-  var tenure = document.getElementById("tenure").value;
-  var revenue = document.getElementById("revenue").value;
-  var growthRate = document.getElementById("growthRate").value;
+  function displayGraph() {
+    var hardCodedData = getData();
+    var amount = document.getElementById("amount").value;
+    var interest = document.getElementById("interest").value;
+    var tenure = document.getElementById("tenure").value;
+    var revenue = document.getElementById("revenue").value;
+    var growthRate = document.getElementById("growthRate").value;
 
-  let history = [
-  { date: '2015-01-01', volume: 375.54 },
-  { date: '2015-02-01', volume: 375.54 },
-  { date: '2015-03-01', volume: 375.54 },
-  { date: '2015-04-01', volume: 375.54 },
-  { date: '2015-05-01', volume: 375.54 },
-  { date: '2015-06-01', volume: 375.54 },
-  { date: '2015-07-01', volume: 375.54 },
-  { date: '2015-08-01', volume: 375.54 },
-  { date: '2015-09-01', volume: 375.54 },
-  { date: '2015-10-01', volume: 375.54 },
-  { date: '2015-11-01', volume: 375.54 },
-  { date: '2015-12-01', volume: 375.54 },
-  { date: '2016-01-01', volume: 375.54 },
-  { date: '2016-02-01', volume: 375.54 },
-  { date: '2016-03-01', volume: 375.54 },
-  { date: '2016-04-01', volume: 375.54 },
-  { date: '2016-05-01', volume: 375.54 },
-  { date: '2016-06-01', volume: 375.54 },
-  { date: '2016-07-01', volume: 375.54 },
-  { date: '2016-08-01', volume: 375.54 },
-  { date: '2016-09-01', volume: 375.54 },
-  { date: '2016-10-01', volume: 375.54 },
-  { date: '2016-11-01', volume: 375.54 },
-  { date: '2016-12-01', volume: 375.54 },
-  { date: '2017-01-01', volume: 375.54 },
-  { date: '2017-02-01', volume: 375.54 },
-  { date: '2017-03-01', volume: 375.54 },
-  { date: '2017-04-01', volume: 375.54 },
-  { date: '2017-05-01', volume: 375.54 },
-  { date: '2017-06-01', volume: 375.54 },
-  { date: '2017-07-01', volume: 375.54 },
-  { date: '2017-08-01', volume: 375.54 },
-  { date: '2017-09-01', volume: 375.54 },
-  { date: '2017-10-01', volume: 375.54 },
-  { date: '2017-11-01', volume: 375.54 },
-  { date: '2017-12-01', volume: 375.54 },
-  { date: '2018-01-01', volume: 375.54 },
-  { date: '2018-02-01', volume: 375.54 },
-  { date: '2018-03-01', volume: 375.54 },
-];
+    const parseTime = d3.timeParse('%Y-%m-%d');
 
-let forecast = [
-  { date: '2015-01-01', volume: 250 },
-  { date: '2015-02-01', volume: 254 },
-  { date: '2015-03-01', volume: 258 },
-  { date: '2015-04-01', volume: 263 },
-  { date: '2015-05-01', volume: 267 },
-  { date: '2015-06-01', volume: 272 },
-  { date: '2015-07-01', volume: 276 },
-  { date: '2015-08-01', volume: 281 },
-  { date: '2015-09-01', volume: 285 },
-  { date: '2015-10-01', volume: 290 },
-  { date: '2015-11-01', volume: 295 },
-  { date: '2015-12-01', volume: 300 },
-  { date: '2016-01-01', volume: 300 },
-  { date: '2016-02-01', volume: 305 },
-  { date: '2016-03-01', volume: 310 },
-  { date: '2016-04-01', volume: 315 },
-  { date: '2016-05-01', volume: 321 },
-  { date: '2016-06-01', volume: 326 },
-  { date: '2016-07-01', volume: 331 },
-  { date: '2016-08-01', volume: 337 },
-  { date: '2016-09-01', volume: 343 },
-  { date: '2016-10-01', volume: 348 },
-  { date: '2016-11-01', volume: 354 },
-  { date: '2016-12-01', volume: 360 },
-  { date: '2017-01-01', volume: 372 },
-  { date: '2017-02-01', volume: 378 },
-  { date: '2017-03-01', volume: 385 },
-  { date: '2017-04-01', volume: 391 },
-  { date: '2017-05-01', volume: 398 },
-  { date: '2017-06-01', volume: 404 },
-  { date: '2017-07-01', volume: 411 },
-  { date: '2017-08-01', volume: 418 },
-  { date: '2017-09-01', volume: 425 },
-  { date: '2017-10-01', volume: 432 },
-  { date: '2017-11-01', volume: 439 },
-  { date: '2017-12-01', volume: 447 },
-  { date: '2018-01-01', volume: 485 },
-  { date: '2018-02-01', volume: 493 },
-  { date: '2018-03-01', volume: 501 },
-];
+    let history = hardCodedData.map((d) => {
+      return {
+        date: parseTime(d.date),
+        volume: d.lp,
+      };
+    });
+    console.log(history.length);
 
-const parseTime = d3.timeParse('%Y-%m-%d');
+    const historyIndex = history.map((d, i) => [i, d.volume]);
 
-history = history.map((d) => {
-  return {
-    date: parseTime(d.date),
-    volume: d.volume,
-  };
-});
+    let forecast = hardCodedData.map((d) => {
+      return {
+        date: parseTime(d.date),
+        volume: d.rsp,
+      };
+    });
+    console.log(forecast.length);
 
-const historyIndex = history.map((d, i) => [i, d.volume]);
+    const chart = d3.select('#chart');
+    const margin = { top: 20, right: 20, bottom: 30, left: 70 };
+    const width = 1000 - margin.left - margin.right;
+    const height = 700 - margin.top - margin.bottom;
+    const innerChart = chart.append('g')
+            .attr('transform', `translate(${margin.left} ${margin.top})`);
 
-forecast = forecast.map((d) => {
-  return {
-    date: parseTime(d.date),
-    volume: d.volume,
-  };
-});
+    const x = d3.scaleTime().rangeRound([0, width]);
+    const y = d3.scaleLinear().rangeRound([height, 0]);
 
-const chart = d3.select('#chart');
-const margin = { top: 20, right: 20, bottom: 30, left: 70 };
-const width = 1000 - margin.left - margin.right;
-const height = 700 - margin.top - margin.bottom;
-const innerChart = chart.append('g')
-  .attr('transform', `translate(${margin.left} ${margin.top})`);
+    const line = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.volume));
 
-const x = d3.scaleTime().rangeRound([0, width]);
-const y = d3.scaleLinear().rangeRound([height, 0]);
+    x.domain([d3.min(history, d => d.date), d3.max(forecast, d => d.date)]);
+    y.domain([0, d3.max(forecast, d => d.volume)]);
 
-const line = d3.line()
-  .x(d => x(d.date))
-  .y(d => y(d.volume));
+    innerChart.append('g')
+            .attr('transform', `translate(0 ${height})`)
+            .call(d3.axisBottom(x));
 
-x.domain([d3.min(history, d => d.date), d3.max(forecast, d => d.date)]);
-y.domain([150, d3.max(forecast, d => d.volume)]);
+    innerChart.append('g')
+            .call(d3.axisLeft(y))
+            .append('text')
+            .attr('fill', '#000')
+            .attr('transform', 'rotate(-90)')
+            .attr('y', 6)
+            .attr('dy', '0.71em')
+            .attr('text-anchor', 'end')
+            .text('Monthly repayments');
 
-innerChart.append('g')
-  .attr('transform', `translate(0 ${height})`)
-  .call(d3.axisBottom(x));
+    innerChart.append('path')
+            .datum(history)
+            .attr('fill', 'none')
+            .attr('stroke', 'steelblue')
+            .attr('stroke-width', 1.5)
+            .attr('d', line);
 
-innerChart.append('g')
-  .call(d3.axisLeft(y))
-  .append('text')
-  .attr('fill', '#000')
-  .attr('transform', 'rotate(-90)')
-  .attr('y', 6)
-  .attr('dy', '0.71em')
-  .attr('text-anchor', 'end')
-  .text('Monthly repayments');
-
-innerChart.append('path')
-  .datum(history)
-  .attr('fill', 'none')
-  .attr('stroke', 'steelblue')
-  .attr('stroke-width', 1.5)
-  .attr('d', line);
-
-innerChart.append('path')
-  .datum(forecast)
-  .attr('fill', 'none')
-  .attr('stroke', 'tomato')
-  .attr('stroke-width', 1.5)
-  .attr('d', line);
-}
+    innerChart.append('path')
+            .datum(forecast)
+            .attr('fill', 'none')
+            .attr('stroke', 'tomato')
+            .attr('stroke-width', 1.5)
+            .attr('d', line);
+  }
 
 </script>
 </body>
